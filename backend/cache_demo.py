@@ -22,10 +22,15 @@ ap = argparse.ArgumentParser()
 ap.add_argument("scene")
 ap.add_argument("--name", default="")
 ap.add_argument("--url", default=os.environ.get("TRUESCALE_URL", DEFAULT_URL))
+ap.add_argument("--max", type=int, default=30, help="server accepts <=30; pick this many evenly spaced")
 a = ap.parse_args()
 
 scene_id = os.path.basename(a.scene.rstrip("/"))
 files = _read_scene(a.scene)
+if len(files) > a.max:
+    idx = [round(i * (len(files) - 1) / (a.max - 1)) for i in range(a.max)]
+    print(f"{len(files)} photos > {a.max}: using every ~{len(files) / a.max:.2f}th")
+    files = [files[i] for i in idx]
 mb = sum(len(b) for _, b in files) / 1e6
 print(f"POST {len(files)} images ({mb:.1f} MB) -> {a.url}/reconstruct")
 t0 = time.perf_counter()

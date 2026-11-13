@@ -8,5 +8,10 @@
     "id": "lkd_lobby",
     "name": "LKD lobby (real, 15 photos)",
     "file": "lkd_lobby.bin"
+  },
+  {
+    "id": "mackey_vending",
+    "name": "Mackey vending (real, 30 photos)",
+    "file": "mackey_vending.bin"
   }
 ]

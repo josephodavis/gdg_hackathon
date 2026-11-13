@@ -92,6 +92,14 @@ export class Viewer {
     this.baseSize = Math.max(this.diag * 0.0015, 0.002);
 
     const mat = new THREE.PointsMaterial({ size: this.baseSize * this.sizeMul, vertexColors: true, sizeAttenuation: true });
+    // Cap on-screen size: points a few cm from the eye would otherwise become huge squares.
+    const maxPx = 20 * this.renderer.getPixelRatio();
+    mat.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <fog_vertex>',
+        `#include <fog_vertex>\n  gl_PointSize = min(gl_PointSize, ${maxPx.toFixed(1)});`,
+      );
+    };
     this.points = new THREE.Points(geom, mat);
     this.scene.add(this.points);
 
