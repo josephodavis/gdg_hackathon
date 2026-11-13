@@ -67,6 +67,8 @@ export class Viewer {
 
   private tick() {
     this.controls.update();
+    // Hide camera frustums the viewer is standing in (they'd fill the screen in photo view).
+    for (const f of this.frustums.children) f.visible = f.userData.apex.distanceTo(this.camera.position) > 1.2;
     for (const cb of this.frameCbs) cb();
     this.renderer.render(this.scene, this.camera);
     this.labels.render(this.scene, this.camera);
@@ -120,11 +122,13 @@ export class Viewer {
 
   private buildFrustums(p: Payload) {
     const d = Math.min(0.25, this.diag * 0.03);
-    const verts: number[] = [];
+    const mat = new THREE.LineBasicMaterial({ color: 0xffa630 });
     const m = new THREE.Matrix4();
     const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z).applyMatrix4(m);
-    const seg = (a: THREE.Vector3, b: THREE.Vector3) => verts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    // One object per camera so ones near the viewer can be hidden (see tick()).
     for (const cam of p.header.cameras) {
+      const verts: number[] = [];
+      const seg = (a: THREE.Vector3, b: THREE.Vector3) => verts.push(a.x, a.y, a.z, b.x, b.y, b.z);
       m.set(...(cam.c2w as Parameters<THREE.Matrix4['set']>));
       const o = v(0, 0, 0);
       const corner = (u: number, w: number) => v(((u - cam.cx) / cam.fx) * d, ((w - cam.cy) / cam.fy) * d, d);
@@ -134,10 +138,12 @@ export class Viewer {
       // little "up" triangle above the top edge (image -y)
       const up = v(0, ((-cam.cy) / cam.fy) * d * 1.35, d);
       seg(tl, up); seg(up, tr);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      const ls = new THREE.LineSegments(g, mat);
+      ls.userData.apex = o;
+      this.frustums.add(ls);
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-    this.frustums.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0xffa630 })));
   }
 
   private buildGrid() {

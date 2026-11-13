@@ -16,7 +16,8 @@ sys.path.insert(0, HERE)
 
 MA_COMMIT = "3d10cf7a3016fc0f9bb13a071ee66c47b10be0d9"  # facebookresearch/map-anything, pinned
 MODEL_ID = "facebook/map-anything-apache"  # Apache-2.0 checkpoint
-GPU = os.environ.get("TRUESCALE_GPU", "L4")  # e.g. TRUESCALE_GPU=A10G modal deploy ...
+# Fallback order when a type has no capacity. Override: TRUESCALE_GPU=A100 modal deploy ...
+GPU = os.environ.get("TRUESCALE_GPU", "L4,A10G,L40S").split(",")
 
 
 def _bake_weights():

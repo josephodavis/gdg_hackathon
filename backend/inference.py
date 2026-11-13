@@ -170,7 +170,12 @@ def postprocess(views, timing=None, max_points=MAX_POINTS, seed=0):
     up, up_method = estimate_up(c2ws)
     R = rotation_a_to_b(up, np.array([0.0, 1.0, 0.0]))
     xyz = xyz @ R.T
-    floor_n = refine_floor(xyz)
+    # Real floors (esp. shiny ones) are noisy: loosen tolerance until a floor is found.
+    floor_n = None
+    for tol in (0.02, 0.04, 0.06):
+        floor_n = refine_floor(xyz, tol=tol)
+        if floor_n is not None:
+            break
     if floor_n is not None:
         R2 = rotation_a_to_b(floor_n, np.array([0.0, 1.0, 0.0]))
         xyz = xyz @ R2.T

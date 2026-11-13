@@ -108,8 +108,19 @@ export class UploadPanel {
     }
     this.els.go.disabled = true;
     try {
-      onStatus('uploading', 'Preparing photos');
-      const shrunk = await Promise.all(this.files.map((f) => shrinkImage(f)));
+      // Decode ≤4 at a time: 24 MP phone photos are ~100 MB each once decoded.
+      const shrunk: Awaited<ReturnType<typeof shrinkImage>>[] = new Array(this.files.length);
+      let next = 0, done = 0;
+      onStatus('uploading', `Preparing photos 0/${this.files.length}`);
+      await Promise.all(
+        Array.from({ length: 4 }, async () => {
+          while (next < this.files.length) {
+            const i = next++;
+            shrunk[i] = await shrinkImage(this.files[i]);
+            onStatus('uploading', `Preparing photos ${++done}/${this.files.length}`);
+          }
+        }),
+      );
       const mb = shrunk.reduce((s, x) => s + x.blob.size, 0) / 1e6;
       const buf = await reconstruct(
         shrunk.map((s) => s.blob),

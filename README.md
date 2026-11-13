@@ -20,11 +20,11 @@ Browser (Vite + TS + Three.js) ──multipart──► Modal L4 GPU (FastAPI)
 
 ```bash
 # backend (one-time: .venv/bin/modal setup)
-python3 -m venv .venv && .venv/bin/pip install modal numpy pillow pillow-heif
-.venv/bin/modal deploy backend/modal_app.py          # prints https://…modal.run URL
+python3 -m venv .venv && .venv/bin/pip install modal numpy pillow pillow-heif httpx
+.venv/bin/modal deploy backend/modal_app.py          # prints https://…modal.run URL (GPU: L4 → A10G → L40S fallback)
 
-# cache a demo scene from a folder of photos
-.venv/bin/modal run backend/modal_app.py --scene samples/kitchen
+# cache a demo scene from a folder of photos (via the deployed HTTP endpoint)
+.venv/bin/python backend/cache_demo.py samples/lkd_lobby --name "LKD lobby"
 
 # frontend
 cd frontend && npm install
@@ -41,6 +41,16 @@ Tests: `.venv/bin/python backend/test_payload.py` (payload round trip, upright a
 - **Measure:** press `M` (or *Start measuring*), click two points. `Esc` cancels. Toggle cm/in.
 - **Will it fit:** enter W×D×H in cm, then *Place box*. Drag the arrows to move it; `R` switches to rotate. Green means it fits, red means it collides with the scan.
 - **Scenes:** cached demos in the dropdown; a live scan is added there too (*Save .bin* to keep it).
+
+## Performance (15 × 24 MP iPhone photos, measured)
+
+| Step | Time |
+|---|---|
+| Cold start (GPU allocation + model load) | ~37 s |
+| Browser: shrink photos to 1600 px JPEG | 73 MB → 6 MB |
+| Server: load images / MapAnything inference / post-process | 0.6 s / 4–5 s / 0.5 s |
+| Warm round trip (HTTP) | ~9 s |
+| Browser end to end (select → 3D view) | ~27 s (headless, software GL) |
 
 ## Accuracy
 
