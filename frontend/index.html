@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TrueScale</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23ffa630'/><path d='M7 24 L25 8' stroke='%23181b20' stroke-width='3.5' stroke-linecap='round'/></svg>" />
   </head>
   <body>
     <header class="topbar">
@@ -58,7 +59,11 @@
 
         <section class="panel" id="panel-view">
           <h2>View</h2>
-          <label class="row"><span>Point size</span><input id="point-size" type="range" min="0.5" max="4" step="0.1" value="1.5" /></label>
+          <div class="row">
+            <button id="view-photo">Photo view</button>
+            <button id="view-overview">Overview</button>
+          </div>
+          <label class="row"><span>Point size</span><input id="point-size" type="range" min="0.5" max="5" step="0.1" value="2" /></label>
           <label class="row check"><input id="toggle-frustums" type="checkbox" checked /> Cameras</label>
           <label class="row check"><input id="toggle-grid" type="checkbox" checked /> Floor grid</label>
           <div id="scene-info" class="muted small"></div>

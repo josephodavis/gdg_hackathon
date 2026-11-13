@@ -21,7 +21,7 @@ export class Viewer {
   diag = 1;
   floorY = 0;
   private baseSize = 0.01;
-  private sizeMul = 1.5;
+  private sizeMul = 2;
   private frameCbs: Array<() => void> = [];
   private loadCbs: Array<() => void> = [];
 
@@ -152,14 +152,24 @@ export class Viewer {
     this.scene.add(grid);
   }
 
-  frame() {
+  /** 'photo' = stand where the first photo was taken (most recognizable); 'overview' = from above. */
+  frame(mode: 'photo' | 'overview' = 'photo') {
     const c = this.bounds.getCenter(new THREE.Vector3());
-    const dir = new THREE.Vector3(0.55, 0.75, 1).normalize();
     this.camera.near = this.diag / 2000;
     this.camera.far = this.diag * 50;
-    this.camera.position.copy(c).addScaledVector(dir, this.diag * 0.95);
+    const cam0 = this.payload?.header.cameras[0];
+    if (mode === 'photo' && cam0) {
+      const m = new THREE.Matrix4().set(...(cam0.c2w as Parameters<THREE.Matrix4['set']>));
+      const pos = new THREE.Vector3().setFromMatrixPosition(m);
+      const fwd = new THREE.Vector3().setFromMatrixColumn(m, 2).normalize();
+      this.camera.position.copy(pos).addScaledVector(fwd, -Math.min(0.5, this.diag * 0.05));
+      this.controls.target.copy(pos).addScaledVector(fwd, Math.max(1, this.diag * 0.3));
+    } else {
+      const dir = new THREE.Vector3(0.35, 1, 0.6).normalize();
+      this.camera.position.copy(c).addScaledVector(dir, this.diag * 1.0);
+      this.controls.target.copy(c);
+    }
     this.camera.updateProjectionMatrix();
-    this.controls.target.copy(c);
     this.controls.update();
   }
 

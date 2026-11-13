@@ -1,5 +1,6 @@
 import './ui.css';
 import { fetchDemo, fetchDemos, type DemoEntry } from './api';
+import { MeasureTool } from './measure';
 import { decodePayload } from './payload';
 import { Viewer } from './viewer';
 
@@ -85,9 +86,19 @@ async function initDemos() {
 statusDemoBtn.onclick = () => loadDemo(demoSelect.value);
 
 // ---------------------------------------------------------------- view controls
+$('view-photo').onclick = () => viewer.frame('photo');
+$('view-overview').onclick = () => viewer.frame('overview');
 $<HTMLInputElement>('point-size').oninput = (e) => viewer.setPointSize(+(e.target as HTMLInputElement).value);
 $<HTMLInputElement>('toggle-frustums').onchange = (e) => viewer.setFrustumsVisible((e.target as HTMLInputElement).checked);
 $<HTMLInputElement>('toggle-grid').onchange = (e) => viewer.setGridVisible((e.target as HTMLInputElement).checked);
+
+// ---------------------------------------------------------------- measure
+export const measure = new MeasureTool(viewer, {
+  btn: $<HTMLButtonElement>('measure-btn'),
+  units: $<HTMLButtonElement>('units-btn'),
+  list: $<HTMLOListElement>('measure-list'),
+  hint: $('hint'),
+});
 
 export { viewer };
 initDemos();
