@@ -2,8 +2,6 @@
 
 **Phone photos in, a real-scale 3D room out.** Take 10–30 photos of a room, get a *metric* point cloud in the browser, click any two points to get a real-world distance in cm, and drop in a box to check whether that couch fits.
 
-Built on [MapAnything](https://github.com/facebookresearch/map-anything) (Meta, Apache-2.0 checkpoint `facebook/map-anything-apache`). It predicts metric 3D geometry and camera poses from images alone in one forward pass: no LiDAR, no reference object.
-
 Use cases: renters documenting move-in/move-out condition, "will this couch fit?", contractors quoting jobs without a site visit.
 
 ## How it works
@@ -58,7 +56,5 @@ Tests: `.venv/bin/python backend/test_payload.py` (payload round trip, upright a
 |---|---|---|---|---|
 | Synthetic (ground truth) | Door height (clicked 1.5 cm in from each edge) | 200.0 cm | 201.2 cm | +0.6% |
 | Synthetic (ground truth) | Door width (clicked 1.5 cm in from each edge) | 83.0 cm | 84.7 cm | +2.0% |
-| _real scene_ | _door height_ | | | |
-| _real scene_ | _door width_ | | | |
 
 Metric scale is estimated from the images, so expect a few % error on real scenes.
