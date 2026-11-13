@@ -50,8 +50,8 @@ app = modal.App("truescale", image=image)
     gpu=GPU,
     scaledown_window=600,  # keep warm 10 min after last request
     timeout=600,
-    # LIVE DEMO: uncomment to avoid cold starts (bills while idle), then `modal deploy` again.
-    # min_containers=1,
+    # LIVE DEMO: keep one GPU warm (bills while idle). Set to 0 and redeploy after the demo.
+    min_containers=1,
 )
 class TrueScale:
     @modal.enter()
