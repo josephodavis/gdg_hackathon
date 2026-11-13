@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrueScale</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">True<span>Scale</span></div>
+      <div class="pitch">Phone photos in, a real-scale 3D room out. Click any two points to measure.</div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="panel" id="panel-scene">
+          <h2>Scene</h2>
+          <label class="row">
+            <span>Demo</span>
+            <select id="demo-select"></select>
+          </label>
+          <div id="dropzone" class="dropzone">
+            <input id="file-input" type="file" accept="image/*,.heic,.heif" multiple hidden />
+            <div class="dz-title">Drop photos or <button type="button" id="pick-btn" class="link">browse</button></div>
+            <div class="dz-tips">10–30 overlapping photos, good light, walk around the space.</div>
+            <div id="thumbs" class="thumbs"></div>
+          </div>
+          <div class="row">
+            <span id="file-count" class="muted">0 photos</span>
+            <button id="reconstruct-btn" class="primary" disabled>Reconstruct</button>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-measure">
+          <h2>Measure <kbd>M</kbd></h2>
+          <div class="row">
+            <button id="measure-btn">Start measuring</button>
+            <button id="units-btn" title="Toggle units">cm</button>
+          </div>
+          <ol id="measure-list" class="measure-list"></ol>
+          <p class="note">± Metric scale estimated from images. <kbd>Esc</kbd> cancels.</p>
+        </section>
+
+        <section class="panel" id="panel-fit">
+          <h2>Will it fit?</h2>
+          <div class="dims">
+            <label>W <input id="fit-w" type="number" min="1" value="200" /></label>
+            <label>D <input id="fit-d" type="number" min="1" value="90" /></label>
+            <label>H <input id="fit-h" type="number" min="1" value="85" /></label>
+            <span class="muted">cm</span>
+          </div>
+          <div class="row">
+            <button id="fit-btn">Place box</button>
+            <span id="fit-status" class="fit-status"></span>
+          </div>
+          <p class="note">Drag arrows to move, ring to rotate. <kbd>R</kbd> toggles move/rotate.</p>
+        </section>
+
+        <section class="panel" id="panel-view">
+          <h2>View</h2>
+          <label class="row"><span>Point size</span><input id="point-size" type="range" min="0.5" max="4" step="0.1" value="1.5" /></label>
+          <label class="row check"><input id="toggle-frustums" type="checkbox" checked /> Cameras</label>
+          <label class="row check"><input id="toggle-grid" type="checkbox" checked /> Floor grid</label>
+          <div id="scene-info" class="muted small"></div>
+        </section>
+      </aside>
+
+      <div id="viewport" class="viewport">
+        <div id="status" class="status hidden">
+          <span id="status-text"></span>
+          <button id="status-demo-btn" class="primary hidden">Load demo scene</button>
+        </div>
+        <div id="hint" class="hint hidden"></div>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

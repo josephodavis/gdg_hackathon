@@ -1,0 +1,8 @@
+map-anything/
+.venv/
+node_modules/
+dist/
+.env.local
+__pycache__/
+*.pyc
+.DS_Store
