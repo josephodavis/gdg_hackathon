@@ -152,6 +152,7 @@ export const fit = new FitBox(viewer, {
   d: $<HTMLInputElement>('fit-d'),
   h: $<HTMLInputElement>('fit-h'),
   btn: $<HTMLButtonElement>('fit-btn'),
+  units: $<HTMLButtonElement>('fit-units'),
   status: $('fit-status'),
 });
 measure.blocked = () => fit.busy;

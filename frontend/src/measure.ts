@@ -3,9 +3,8 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { onUnits, toggleUnits, type Units } from './units';
 import type { Viewer } from './viewer';
-
-export type Units = 'cm' | 'in';
 
 interface Measurement {
   id: number;
@@ -92,7 +91,8 @@ export class MeasureTool {
     canvas.addEventListener('pointerleave', () => (this.hoverMarker.visible = false));
 
     els.btn.onclick = () => this.toggle();
-    els.units.onclick = () => this.setUnits(this.units === 'cm' ? 'in' : 'cm');
+    els.units.onclick = () => toggleUnits();
+    onUnits((u) => this.applyUnits(u));
     window.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement).closest('input, select, textarea')) return;
       if (e.key === 'm' || e.key === 'M') this.toggle();
@@ -113,7 +113,7 @@ export class MeasureTool {
     this.updateHint();
   }
 
-  setUnits(u: Units) {
+  private applyUnits(u: Units) {
     this.units = u;
     this.els.units.textContent = u;
     for (const m of this.items) m.label.textContent = formatLength(m.a.distanceTo(m.b), u);

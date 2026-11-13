@@ -45,10 +45,10 @@
         <section class="panel" id="panel-fit">
           <h2>Will it fit?</h2>
           <div class="dims">
-            <label>W <input id="fit-w" type="number" min="1" value="200" /></label>
-            <label>D <input id="fit-d" type="number" min="1" value="90" /></label>
-            <label>H <input id="fit-h" type="number" min="1" value="85" /></label>
-            <span class="muted">cm</span>
+            <label>W <input id="fit-w" type="number" min="0.5" step="1" value="200" /></label>
+            <label>D <input id="fit-d" type="number" min="0.5" step="1" value="90" /></label>
+            <label>H <input id="fit-h" type="number" min="0.5" step="1" value="85" /></label>
+            <button id="fit-units" title="Toggle units (shared with Measure)">cm</button>
           </div>
           <div class="row">
             <button id="fit-btn">Place box</button>

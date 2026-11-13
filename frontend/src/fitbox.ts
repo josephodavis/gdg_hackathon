@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { fromDisplay, getUnits, onUnits, toDisplay, toggleUnits, type Units } from './units';
 import type { Viewer } from './viewer';
 
 const OK = 0x34d399, BAD = 0xf87171;
@@ -20,7 +21,7 @@ export class FitBox {
   inside = 0;
   private dims = { w: 2, d: 0.9, h: 0.85 };
   private viewer: Viewer;
-  private els: { w: HTMLInputElement; d: HTMLInputElement; h: HTMLInputElement; btn: HTMLButtonElement; status: HTMLElement };
+  private els: { w: HTMLInputElement; d: HTMLInputElement; h: HTMLInputElement; btn: HTMLButtonElement; units: HTMLButtonElement; status: HTMLElement };
 
   constructor(viewer: Viewer, els: FitBox['els']) {
     this.viewer = viewer;
@@ -59,7 +60,9 @@ export class FitBox {
     this.tc.getHelper().visible = false;
 
     els.btn.onclick = () => (this.placed ? this.remove() : this.place());
-    for (const k of ['w', 'd', 'h'] as const) els[k].oninput = () => this.readDims();
+    // Only re-read the edited field: the others show rounded values and must not overwrite exact dims.
+    for (const k of ['w', 'd', 'h'] as const) els[k].oninput = () => this.readDim(k);
+    els.units.onclick = () => toggleUnits();
     window.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement).closest('input, select, textarea') || !this.placed) return;
       if (e.key === 'r' || e.key === 'R') this.setMode(this.tc.mode === 'translate' ? 'rotate' : 'translate');
@@ -72,7 +75,9 @@ export class FitBox {
       }
     });
     viewer.onLoad(() => this.remove());
-    this.readDims();
+    // dims live in meters; inputs are rendered from them in the current units (no drift on toggle)
+    onUnits((u) => this.applyUnits(u));
+    this.applyDims();
   }
 
   /** True while the pointer is over/using the gizmo (so measure clicks are ignored). */
@@ -93,9 +98,23 @@ export class FitBox {
     this.check();
   }
 
-  private readDims() {
-    const v = (el: HTMLInputElement, def: number) => Math.max(1, +el.value || def) / 100;
-    this.dims = { w: v(this.els.w, 200), d: v(this.els.d, 90), h: v(this.els.h, 85) };
+  private readDim(k: 'w' | 'd' | 'h') {
+    const v = +this.els[k].value;
+    if (!(v > 0)) return; // ignore empty/partial input
+    this.dims[k] = fromDisplay(v);
+    this.applyDims();
+  }
+
+  private applyUnits(u: Units) {
+    this.els.units.textContent = u;
+    for (const k of ['w', 'd', 'h'] as const) {
+      this.els[k].value = String(toDisplay(this.dims[k], u));
+      this.els[k].step = u === 'cm' ? '1' : '0.5';
+    }
+    if (this.placed) this.check();
+  }
+
+  private applyDims() {
     this.mesh.scale.set(this.dims.w, this.dims.h, this.dims.d);
     this.mesh.position.y = this.dims.h / 2;
     this.labelObj.position.set(0, this.dims.h + 0.08, 0);
@@ -167,9 +186,9 @@ export class FitBox {
     const col = collide ? BAD : OK;
     this.mesh.material.color.setHex(col);
     this.edges.material.color.setHex(col);
-    const cm = (m: number) => Math.round(m * 100);
+    const u = getUnits(), f = (m: number) => toDisplay(m, u);
     const lift = this.group.position.y - this.viewer.floorY;
-    this.label.textContent = `${cm(this.dims.w)}×${cm(this.dims.d)}×${cm(this.dims.h)} cm` + (lift > 0.01 ? ` · ↑ ${cm(lift)} cm` : '');
+    this.label.textContent = `${f(this.dims.w)}×${f(this.dims.d)}×${f(this.dims.h)} ${u}` + (lift > 0.01 ? ` · ↑ ${f(lift)} ${u}` : '');
     this.label.style.borderColor = collide ? '#f87171' : '#34d399';
     this.els.status.textContent = collide ? `✕ Collides (${n.toLocaleString()} pts)` : '✓ Fits';
     this.els.status.className = `fit-status ${collide ? 'bad' : 'ok'}`;
