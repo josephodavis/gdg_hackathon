@@ -1,5 +1,6 @@
 import './ui.css';
 import { fetchDemo, fetchDemos, type DemoEntry } from './api';
+import { FitBox } from './fitbox';
 import { MeasureTool } from './measure';
 import { decodePayload } from './payload';
 import { UploadPanel } from './upload';
@@ -144,6 +145,17 @@ export const measure = new MeasureTool(viewer, {
   list: $<HTMLOListElement>('measure-list'),
   hint: $('hint'),
 });
+
+// ---------------------------------------------------------------- will it fit
+export const fit = new FitBox(viewer, {
+  w: $<HTMLInputElement>('fit-w'),
+  d: $<HTMLInputElement>('fit-d'),
+  h: $<HTMLInputElement>('fit-h'),
+  btn: $<HTMLButtonElement>('fit-btn'),
+  status: $('fit-status'),
+});
+measure.blocked = () => fit.busy;
+(window as unknown as { fit: FitBox }).fit = fit;
 
 export { viewer };
 initDemos();
