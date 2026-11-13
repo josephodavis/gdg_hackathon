@@ -16,6 +16,7 @@ sys.path.insert(0, HERE)
 
 MA_COMMIT = "3d10cf7a3016fc0f9bb13a071ee66c47b10be0d9"  # facebookresearch/map-anything, pinned
 MODEL_ID = "facebook/map-anything-apache"  # Apache-2.0 checkpoint
+GPU = os.environ.get("TRUESCALE_GPU", "L4")  # e.g. TRUESCALE_GPU=A10G modal deploy ...
 
 
 def _bake_weights():
@@ -45,7 +46,7 @@ app = modal.App("truescale", image=image)
 
 
 @app.cls(
-    gpu="L4",
+    gpu=GPU,
     scaledown_window=600,  # keep warm 10 min after last request
     timeout=600,
     # LIVE DEMO: uncomment to avoid cold starts (bills while idle), then `modal deploy` again.
