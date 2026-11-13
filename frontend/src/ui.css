@@ -28,7 +28,7 @@ button, input, select { font: inherit; color: inherit; }
 
 .layout { flex: 1; display: flex; min-height: 0; }
 .sidebar {
-  width: 310px; flex-shrink: 0; overflow-y: auto;
+  width: 330px; flex-shrink: 0; overflow-y: auto;
   border-right: 1px solid var(--line); background: var(--panel);
 }
 .panel { padding: 12px 14px; border-bottom: 1px solid var(--line); }

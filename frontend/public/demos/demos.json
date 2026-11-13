@@ -5,13 +5,18 @@
     "file": "synthetic.bin"
   },
   {
-    "id": "lkd_lobby",
-    "name": "LKD lobby (real, 15 photos)",
-    "file": "lkd_lobby.bin"
-  },
-  {
     "id": "mackey_vending",
     "name": "Mackey vending (real, 30 photos)",
     "file": "mackey_vending.bin"
+  },
+  {
+    "id": "reading_room",
+    "name": "LKD Reading Room",
+    "file": "reading_room.bin"
+  },
+  {
+    "id": "lkd_lobby",
+    "name": "LKD Lobby",
+    "file": "lkd_lobby.bin"
   }
 ]
