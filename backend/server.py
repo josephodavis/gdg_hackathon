@@ -56,6 +56,13 @@ def create_app(get_model) -> FastAPI:
         CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
     )
 
+    @app.get("/")
+    def root():
+        return {
+            "service": "TrueScale GPU API (MapAnything metric 3D reconstruction)",
+            "endpoints": {"GET /health": "liveness", "POST /reconstruct": "multipart files: 2-30 photos -> binary point cloud"},
+        }
+
     @app.get("/health")
     def health():
         return {"ok": True}
