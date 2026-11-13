@@ -52,8 +52,8 @@ export class FitBox {
       viewer.controls.enabled = !e.value;
     });
     this.tc.addEventListener('objectChange', () => {
-      // Free to raise (shelves, tabletops) but never sink below the floor.
-      if (this.group.position.y < viewer.floorY) this.group.position.y = viewer.floorY;
+      // Free to raise/tilt, but no corner may sink below the floor.
+      this.keepAboveFloor();
       this.dirty = true;
     });
     viewer.scene.add(this.tc.getHelper());
@@ -67,6 +67,7 @@ export class FitBox {
       if ((e.target as HTMLElement).closest('input, select, textarea') || !this.placed) return;
       if (e.key === 'r' || e.key === 'R') this.setMode(this.tc.mode === 'translate' ? 'rotate' : 'translate');
       if (e.key === 'f' || e.key === 'F') this.dropToFloor();
+      if (e.key === 'l' || e.key === 'L') this.level();
     });
     viewer.onFrame(() => {
       if (this.dirty && this.placed) {
@@ -87,14 +88,44 @@ export class FitBox {
 
   private setMode(m: 'translate' | 'rotate') {
     this.tc.setMode(m);
-    this.tc.showX = m === 'translate';
+    this.tc.showX = true; // translate: sideways; rotate: tilt (tip forward/back about the box's width axis)
+    this.tc.showY = true; // translate: up/down; rotate: spin about vertical
     this.tc.showZ = m === 'translate';
-    this.tc.showY = true; // translate: up/down arrow; rotate: turn about vertical
+  }
+
+  /** World Y of the box's lowest corner. */
+  private minCornerY() {
+    this.group.updateMatrixWorld();
+    const m = this.group.matrixWorld, v = new THREE.Vector3(), { w, d, h } = this.dims;
+    let min = Infinity;
+    for (const x of [-w / 2, w / 2]) for (const y of [0, h]) for (const z of [-d / 2, d / 2]) min = Math.min(min, v.set(x, y, z).applyMatrix4(m).y);
+    return min;
+  }
+
+  private keepAboveFloor() {
+    const dy = this.viewer.floorY - this.minCornerY();
+    if (dy > 0) this.group.position.y += dy;
+  }
+
+  /** Degrees between the box's up axis and world up. */
+  private tiltDeg() {
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.group.quaternion);
+    return THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(up.y, -1, 1)));
   }
 
   dropToFloor() {
     if (!this.placed) return;
-    this.group.position.y = this.viewer.floorY;
+    this.group.position.y += this.viewer.floorY - this.minCornerY();
+    this.check();
+  }
+
+  /** Remove tilt, keep spin; lowest corner stays at the same height. */
+  level() {
+    if (!this.placed) return;
+    const lift = this.minCornerY() - this.viewer.floorY;
+    const e = new THREE.Euler().setFromQuaternion(this.group.quaternion, 'YXZ');
+    this.group.rotation.set(0, e.y, 0);
+    this.group.position.y += this.viewer.floorY + lift - this.minCornerY();
     this.check();
   }
 
@@ -118,6 +149,7 @@ export class FitBox {
     this.mesh.scale.set(this.dims.w, this.dims.h, this.dims.d);
     this.mesh.position.y = this.dims.h / 2;
     this.labelObj.position.set(0, this.dims.h + 0.08, 0);
+    if (this.placed) this.keepAboveFloor();
     this.dirty = true;
   }
 
@@ -160,9 +192,11 @@ export class FitBox {
     const inv = new THREE.Matrix4().copy(this.group.matrixWorld).invert();
     const e = inv.elements; // column-major
     const hw = this.dims.w / 2, hd = this.dims.d / 2, h = this.dims.h;
+    const floorBand = this.viewer.floorY + FLOOR_MARGIN;
     let n = 0;
     for (let i = 0; i < pos.length; i += 3) {
       const x = pos[i], y = pos[i + 1], z = pos[i + 2];
+      if (y < floorBand) continue; // the floor itself never counts (matters when tilted onto an edge)
       const ly = e[1] * x + e[5] * y + e[9] * z + e[13];
       if (ly < FLOOR_MARGIN || ly > h) continue;
       const lx = e[0] * x + e[4] * y + e[8] * z + e[12];
@@ -187,8 +221,11 @@ export class FitBox {
     this.mesh.material.color.setHex(col);
     this.edges.material.color.setHex(col);
     const u = getUnits(), f = (m: number) => toDisplay(m, u);
-    const lift = this.group.position.y - this.viewer.floorY;
-    this.label.textContent = `${f(this.dims.w)}×${f(this.dims.d)}×${f(this.dims.h)} ${u}` + (lift > 0.01 ? ` · ↑ ${f(lift)} ${u}` : '');
+    const lift = this.minCornerY() - this.viewer.floorY, tilt = this.tiltDeg();
+    this.label.textContent =
+      `${f(this.dims.w)}×${f(this.dims.d)}×${f(this.dims.h)} ${u}` +
+      (lift > 0.01 ? ` · ↑ ${f(lift)} ${u}` : '') +
+      (tilt > 1 ? ` · tilt ${Math.round(tilt)}°` : '');
     this.label.style.borderColor = collide ? '#f87171' : '#34d399';
     this.els.status.textContent = collide ? `✕ Collides (${n.toLocaleString()} pts)` : '✓ Fits';
     this.els.status.className = `fit-status ${collide ? 'bad' : 'ok'}`;
