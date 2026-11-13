@@ -51,7 +51,8 @@ export class FitBox {
       viewer.controls.enabled = !e.value;
     });
     this.tc.addEventListener('objectChange', () => {
-      this.group.position.y = viewer.floorY; // stay on the floor
+      // Free to raise (shelves, tabletops) but never sink below the floor.
+      if (this.group.position.y < viewer.floorY) this.group.position.y = viewer.floorY;
       this.dirty = true;
     });
     viewer.scene.add(this.tc.getHelper());
@@ -62,6 +63,7 @@ export class FitBox {
     window.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement).closest('input, select, textarea') || !this.placed) return;
       if (e.key === 'r' || e.key === 'R') this.setMode(this.tc.mode === 'translate' ? 'rotate' : 'translate');
+      if (e.key === 'f' || e.key === 'F') this.dropToFloor();
     });
     viewer.onFrame(() => {
       if (this.dirty && this.placed) {
@@ -82,7 +84,13 @@ export class FitBox {
     this.tc.setMode(m);
     this.tc.showX = m === 'translate';
     this.tc.showZ = m === 'translate';
-    this.tc.showY = m === 'rotate';
+    this.tc.showY = true; // translate: up/down arrow; rotate: turn about vertical
+  }
+
+  dropToFloor() {
+    if (!this.placed) return;
+    this.group.position.y = this.viewer.floorY;
+    this.check();
   }
 
   private readDims() {
@@ -160,7 +168,8 @@ export class FitBox {
     this.mesh.material.color.setHex(col);
     this.edges.material.color.setHex(col);
     const cm = (m: number) => Math.round(m * 100);
-    this.label.textContent = `${cm(this.dims.w)}×${cm(this.dims.d)}×${cm(this.dims.h)} cm`;
+    const lift = this.group.position.y - this.viewer.floorY;
+    this.label.textContent = `${cm(this.dims.w)}×${cm(this.dims.d)}×${cm(this.dims.h)} cm` + (lift > 0.01 ? ` · ↑ ${cm(lift)} cm` : '');
     this.label.style.borderColor = collide ? '#f87171' : '#34d399';
     this.els.status.textContent = collide ? `✕ Collides (${n.toLocaleString()} pts)` : '✓ Fits';
     this.els.status.className = `fit-status ${collide ? 'bad' : 'ok'}`;
