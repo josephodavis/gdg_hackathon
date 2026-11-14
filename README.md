@@ -4,6 +4,8 @@
 
 Use cases: renters documenting move-in/move-out condition, "will this couch fit?", contractors quoting jobs without a site visit.
 
+<img width="982" height="555" alt="Screenshot 2026-11-13 at 8 32 38 PM" src="https://github.com/user-attachments/assets/42adf192-2293-47bf-b445-dd9333829d82" />
+
 ## How it works
 
 ```
